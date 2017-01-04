@@ -6,9 +6,10 @@ pygame.init()
 random.seed()
 
 black = 0,0,0
+white = 255,255,255
 
 #set image resolution
-size = width, height = 1920, 1080
+size = width, height = 100, 200
 
 #initialize image
 screen = pygame.display.set_mode(size)
@@ -20,7 +21,7 @@ def generaterandom():
     for x in range(width):
         for y in range(height):
             if random.randint(0,1) == 1:
-                pixels[x,y] = 255,255,255
+                pixels[x,y] = white
 
 #initialize pattern
 generaterandom()
@@ -29,12 +30,46 @@ generaterandom()
 while 1:
     for x in range(width):
         #copy this and previous col of pixels to reference
-        thisrow = pixels[x]
-        lastrow = pixels[height-1]
+        thiscol = pixels[x]
+        lastcol = pixels[width-1]
+        nextcol = pixels[0]
         if x != 0:
-        lastrow = pixels[x-1]
+            lastcol = pixels[x-1]
+        if x != width-1:
+            nextcol = pixels[x+1]
 
         for y in range(height):
+            #calculate neighbors of each pixel
+            neighbors = 0
+            if ((y == 0 and all(lastcol[height-1] == black)) #above left
+            or (y != 0 and all(lastcol[y-1] == black))):
+                neighbors = neighbors+1
+            if ((y == 0 and all(thiscol[height-1] == black)) #above
+            or (y != 0 and all(thiscol[y-1] == black))):
+                neighbors = neighbors+1
+            if ((y == 0 and all(nextcol[height-1] == black)) #above right
+            or (y != 0 and all(nextcol[y-1] == black))):
+                neighbors = neighbors+1
+            if (all(lastcol[y] == black)): #left
+                neighbors = neighbors+1
+            if (all(nextcol[y] == black)): #right
+                neighbors = neighbors+1
+            if ((y == height-1 and all(lastcol[0] == black)) #below left
+            or (y != height-1 and all(lastcol[y+1] == black))):
+                neighbors = neighbors+1
+            if ((y == height-1 and all(thiscol[0] == black)) #below
+            or (y != height-1 and all(thiscol[y+1] == black))):
+                neighbors = neighbors+1
+            if ((y == height-1 and all(nextcol[0] == black)) #below right
+            or (y != height-1 and all(nextcol[y+1] == black))):
+                neighbors = neighbors+1
+            print(neighbors)
             #apply the rules to each pixel
+            #if does not have 2 or 3 neighbors, die
+            if neighbors < 2 or neighbors > 3:
+                pixels[x,y] = black
+            #if exactly 3 neighbors, come alive
+            elif neighbors == 3:
+                pixels[x,y] = white
 
     pygame.display.flip()
