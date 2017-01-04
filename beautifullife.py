@@ -9,7 +9,7 @@ black = 0,0,0
 white = 255,255,255
 
 #set image resolution
-size = width, height = 100, 200
+size = width, height = 100, 100
 
 #initialize image
 screen = pygame.display.set_mode(size)
@@ -28,15 +28,11 @@ generaterandom()
 
 #main loop
 while 1:
+    thiscol = pixels[0]
+    lastcol = pixels[width-1]
+    nextcol = pixels[1]
     for x in range(width):
-        #copy this and previous col of pixels to reference
-        thiscol = pixels[x]
-        lastcol = pixels[width-1]
-        nextcol = pixels[0]
-        if x != 0:
-            lastcol = pixels[x-1]
-        if x != width-1:
-            nextcol = pixels[x+1]
+
 
         for y in range(height):
             #calculate neighbors of each pixel
@@ -67,9 +63,15 @@ while 1:
             #apply the rules to each pixel
             #if does not have 2 or 3 neighbors, die
             if neighbors < 2 or neighbors > 3:
-                pixels[x,y] = black
+                pixels[x,y] = white
             #if exactly 3 neighbors, come alive
             elif neighbors == 3:
-                pixels[x,y] = white
+                pixels[x,y] = black
+        #copy this and previous col of pixels to reference
+        thiscol = nextcol
+        lastcol = thiscol
+        nextcol = pixels[0]
+        if x < width-2:
+            nextcol = pixels[x+2]
 
     pygame.display.flip()
