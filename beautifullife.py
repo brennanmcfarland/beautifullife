@@ -5,8 +5,10 @@ import random
 pygame.init()
 random.seed()
 
-black = 0,0,0
-white = 255,255,255
+alive = 0,0,0
+neighborsnone = 255,255,255
+neighborsone = 200,200,200
+neighborstwo = 123,123,123
 
 #set image resolution
 size = width, height = 100, 100
@@ -15,24 +17,29 @@ size = width, height = 100, 100
 screen = pygame.display.set_mode(size)
 pixels = pygame.surfarray.pixels3d(screen)
 
+#clear the screen
+def clearcells():
+    screen.fill(neighborsnone)
 
 #randomly generate initial noise pattern:
 def generaterandom():
-    screen.fill(white)
     for x in range(width):
         for y in range(height):
             if random.randint(0,3) == 1:
-                pixels[x,y] = black
+                pixels[x,y] = alive
 
-def generatespecial():
-    screen.fill(white)
-    pixels[10,10] = black
-    pixels[10,11] = black
-    pixels[11,10] = black
-    pixels[11,11] = black
+#spawn a glider shape
+def spawnglider(x,y):
+    pixels[x,y] = alive
+    pixels[x,(y-1)%height] = alive
+    pixels[(x-1)%width,y] = alive
+    pixels[(x-2)%width,y] = alive
+    pixels[(x-1)%width,(y-2)%height] = alive
+
 
 #initialize pattern
-generaterandom()
+clearcells()
+spawnglider(10,10)
 
 #main loop
 while 1:
@@ -43,57 +50,39 @@ while 1:
         for y in range(height):
             #calculate neighbors of each pixel
             neighbors = 0
-            if ((y == 0 and all(lastcol[height-1] == black)) #above left
-            or (y != 0 and all(lastcol[y-1] == black))):
+            if ((y == 0 and all(lastcol[height-1] == alive)) #above left
+            or (y != 0 and all(lastcol[y-1] == alive))):
                 neighbors = neighbors+1
-                #print('al')
-            if ((y == 0 and all(thiscol[height-1] == black)) #above
-            or (y != 0 and all(thiscol[y-1] == black))):
+            if ((y == 0 and all(thiscol[height-1] == alive)) #above
+            or (y != 0 and all(thiscol[y-1] == alive))):
                 neighbors = neighbors+1
-                #print('a')
-            if ((y == 0 and all(nextcol[height-1] == black)) #above right
-            or (y != 0 and all(nextcol[y-1] == black))):
+            if ((y == 0 and all(nextcol[height-1] == alive)) #above right
+            or (y != 0 and all(nextcol[y-1] == alive))):
                 neighbors = neighbors+1
-                #print('ar')
-            if (all(lastcol[y] == black)): #left
+            if (all(lastcol[y] == alive)): #left
                 neighbors = neighbors+1
-                #print('l')
-            if (all(nextcol[y] == black)): #right
+            if (all(nextcol[y] == alive)): #right
                 neighbors = neighbors+1
-                #print('r')
-            if ((y == height-1 and all(lastcol[0] == black)) #below left
-            or (y != height-1 and all(lastcol[y+1] == black))):
+            if ((y == height-1 and all(lastcol[0] == alive)) #below left
+            or (y != height-1 and all(lastcol[y+1] == alive))):
                 neighbors = neighbors+1
-                #print('bl')
-            if ((y == height-1 and all(thiscol[0] == black)) #below
-            or (y != height-1 and all(thiscol[y+1] == black))):
+            if ((y == height-1 and all(thiscol[0] == alive)) #below
+            or (y != height-1 and all(thiscol[y+1] == alive))):
                 neighbors = neighbors+1
-                #print('b')
-            if ((y == height-1 and all(nextcol[0] == black)) #below right
-            or (y != height-1 and all(nextcol[y+1] == black))):
+            if ((y == height-1 and all(nextcol[0] == alive)) #below right
+            or (y != height-1 and all(nextcol[y+1] == alive))):
                 neighbors = neighbors+1
-                #print('br')
-            #if neighbors > 0:
-                #print(x,y,neighbors)
-                #lastcolclear = True
-                #for a in range(0,100):
-                #    if all(lastcol[a] == black):
-                #        lastcolclear = False
-                #if lastcolclear == True:
-                    #print('lastcolclear')
-                #thiscolclear = True
-                #for a in range(0,100):
-                #    if all(thiscol[a] == black):
-                #        thiscolclear = False
-                #if thiscolclear == True:
-                    #print('thiscolclear')
             #apply the rules to each pixel
             #if does not have 2 or 3 neighbors, die
-            if neighbors < 2 or neighbors > 3:
-                pixels[x,y] = white
+            if neighbors == 0:
+                pixels[x,y] = neighborsnone
+            elif neighbors == 1:
+                pixels[x,y] = neighborsone
+            elif neighbors > 3:
+                pixels[x,y] = neighborstwo
             #if exactly 3 neighbors, come alive
             elif neighbors == 3:
-                pixels[x,y] = black
+                pixels[x,y] = alive
         #copy this and previous col of pixels to reference
         lastcol = thiscol
         thiscol = nextcol
